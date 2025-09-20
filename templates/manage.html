@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+body {
+    background: url('https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTExL3Jhd3BpeGVsX29mZmljZV8zMF9hYnN0cmFjdF9ncmFkaWVudF93aGl0ZV9iYWNrZ3JvdW5kX3ZlY3Rvcl9wcl9kZGY3ZTJiNC0wMjU3LTRjMTUtOWFjNS0xMmQwZTA0N2E4MWYuanBn.jpg') center/cover no-repeat fixed;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    color: #111;
+}
+
+/* Page heading */
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #111;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+}
+
+/* Action buttons */
+.action-buttons {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.action-buttons button {
+    margin: 0 5px;
+    padding: 10px 20px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+.action-buttons button:hover { opacity: 0.8; }
+.download-btn { background: #00bfff; color: #fff; }
+.hide-btn { background: #ff9900; color: #fff; }
+.delete-btn { background: #ff4444; color: #fff; }
+
+/* Gallery grid */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    justify-items: center;
+}
+
+/* Media card */
+.media-card {
+    position: relative;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 220px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.media-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+}
+.media-card img,
+.media-card video {
+    width: 100%;
+    display: block;
+    border-radius: 16px 16px 0 0;
+    object-fit: cover;
+}
+
+/* Media info */
+.media-info {
+    padding: 10px;
+    font-size: 0.85rem;
+    color: #111;
+    text-shadow: 0 0 2px rgba(255,255,255,0.5);
+}
+
+/* Checkbox */
+.checkbox-container {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    padding: 4px;
+}
+
+/* Responsive */
+@media(max-width: 500px){
+    .media-card { max-width: 90%; }
+}
+</style>
+
+<h2>Manage Media</h2>
+
+<div class="action-buttons">
+    <button type="button" id="select-all">Select All</button>
+    <button type="button" id="deselect-all">Deselect All</button>
+    <button type="button" class="hide-btn" id="hide-selected">Hide</button>
+    <button type="button" class="delete-btn" id="delete-selected">Delete</button>
+    <button type="submit" class="download-btn" form="mediaForm">Download</button>
+</div>
+
+<form id="mediaForm" method="POST" action="{{ url_for('download_selected') }}">
+<div class="gallery">
+{% for media in medias %}
+    <div class="media-card">
+        <div class="checkbox-container">
+            <input type="checkbox" name="media_ids" value="{{ media.id }}" class="media-checkbox">
+        </div>
+        {% if media.url.endswith('.mp4') %}
+            <video controls>
+                <source src="{{ media.url }}" type="video/mp4">
+            </video>
+        {% else %}
+            <img src="{{ media.url }}" alt="{{ media.filename }}">
+        {% endif %}
+        <div class="media-info">
+            {{ media.uploaded_by }}{% if media.description %} | {{ media.description }}{% endif %}
+        </div>
+    </div>
+{% else %}
+    <p style="text-align:center; width:100%;">No media available.</p>
+{% endfor %}
+</div>
+</form>
+
+<script>
+// Select / Deselect all
+document.getElementById('select-all').addEventListener('click', () => {
+    document.querySelectorAll('.media-checkbox').forEach(cb => cb.checked = true);
+});
+document.getElementById('deselect-all').addEventListener('click', () => {
+    document.querySelectorAll('.media-checkbox').forEach(cb => cb.checked = false);
+});
+
+// Hide / Delete buttons
+document.getElementById('hide-selected').addEventListener('click', () => {
+    const ids = Array.from(document.querySelectorAll('.media-checkbox:checked')).map(cb => cb.value);
+    if(!ids.length) return alert("Select media to hide");
+    fetch('{{ url_for("bulk_toggle_visibility") }}', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({media_ids: ids})
+    }).then(() => location.reload());
+});
+
+document.getElementById('delete-selected').addEventListener('click', () => {
+    const ids = Array.from(document.querySelectorAll('.media-checkbox:checked')).map(cb => cb.value);
+    if(!ids.length) return alert("Select media to delete");
+    if(!confirm("Are you sure you want to delete selected media?")) return;
+    fetch('{{ url_for("bulk_delete") }}', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({media_ids: ids})
+    }).then(() => location.reload());
+});
+</script>
+{% endblock %}

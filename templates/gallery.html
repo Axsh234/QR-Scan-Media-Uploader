@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+body {
+    background: url('https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTExL3Jhd3BpeGVsX29mZmljZV8zMF9hYnN0cmFjdF9ncmFkaWVudF93aGl0ZV9iYWNrZ3JvdW5kX3ZlY3Rvcl9wcl9kZGY3ZTJiNC0wMjU3LTRjMTUtOWFjNS0xMmQwZTA0N2E4MWYuanBn.jpg') center/cover no-repeat fixed;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    color: #111;
+    position: relative;
+}
+
+/* Page heading */
+h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #111;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+    position: relative;
+    z-index: 2;
+}
+
+/* Masonry-style gallery */
+.gallery {
+    column-count: 4;
+    column-gap: 15px;
+    width: 95%;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+@media (max-width: 1200px) { .gallery { column-count: 3; } }
+@media (max-width: 900px) { .gallery { column-count: 2; } }
+@media (max-width: 600px) { .gallery { column-count: 1; } }
+
+/* Media card */
+.media-card {
+    display: inline-block;
+    margin: 0 0 15px;
+    width: 100%;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.media-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.media-card img,
+.media-card video {
+    width: 100%;
+    display: block;
+    border-radius: 16px 16px 0 0;
+    object-fit: cover;
+}
+
+/* Media info */
+.media-info {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    color: #111;
+    text-shadow: 0 0 2px rgba(255,255,255,0.5);
+}
+
+/* Background canvas */
+#bgCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+</style>
+
+<canvas id="bgCanvas"></canvas>
+
+<h2>Gallery</h2>
+
+<div class="gallery">
+{% for media in medias %}
+    <div class="media-card">
+        {% if media.url.endswith('.mp4') %}
+            <video controls>
+                <source src="{{ media.url }}" type="video/mp4">
+            </video>
+        {% else %}
+            <img src="{{ media.url }}" alt="{{ media.filename }}">
+        {% endif %}
+        <div class="media-info">
+            {{ media.uploaded_by }}{% if media.description %} | {{ media.description }}{% endif %}
+        </div>
+    </div>
+{% else %}
+    <p style="text-align:center; width:100%;">No media available.</p>
+{% endfor %}
+</div>
+
+<script>
+// Canvas background animation
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+// Floating shapes
+const shapes = [];
+const shapeCount = 60;
+for (let i = 0; i < shapeCount; i++) {
+    shapes.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: 5 + Math.random() * 20,
+        dx: -0.3 + Math.random() * 0.6,
+        dy: -0.3 + Math.random() * 0.6,
+        alpha: 0.2 + Math.random() * 0.5,
+        color: `rgba(${Math.floor(200 + Math.random()*55)},${Math.floor(200 + Math.random()*55)},255,`
+    });
+}
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    shapes.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
+        ctx.fillStyle = s.color + s.alpha + ')';
+        ctx.fill();
+        s.x += s.dx;
+        s.y += s.dy;
+        if (s.x - s.radius > canvas.width) s.x = -s.radius;
+        if (s.x + s.radius < 0) s.x = canvas.width + s.radius;
+        if (s.y - s.radius > canvas.height) s.y = -s.radius;
+        if (s.y + s.radius < 0) s.y = canvas.height + s.radius;
+    });
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
+{% endblock %}
