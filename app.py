@@ -135,7 +135,8 @@ def upload():
 
             try:
                 # Upload to Cloudinary
-                result = cloudinary.uploader.upload(file)
+                result = cloudinary.uploader.upload(file, resource_type="auto")
+
             except Exception as e:
                 flash(f"Upload failed: {str(e)}")
                 return redirect(url_for('upload'))
