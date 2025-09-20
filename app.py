@@ -123,18 +123,22 @@ def home():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        file = request.files.get('file')
+        file = request.files.get('file')  # now there's only one input
+
         if file and file.filename:
-            # Read uploader name from form if user is anonymous
             uploader_name = current_user.username if current_user.is_authenticated else request.form.get('uploader_name', 'Anonymous')
 
-            # Reset file pointer after reading size
+            # Reset pointer for size calculation
             file.seek(0)
             size = len(file.read())
             file.seek(0)
 
-            # Upload to Cloudinary
-            result = cloudinary.uploader.upload(file)
+            try:
+                # Upload to Cloudinary
+                result = cloudinary.uploader.upload(file)
+            except Exception as e:
+                flash(f"Upload failed: {str(e)}")
+                return redirect(url_for('upload'))
 
             media = Media(
                 filename=file.filename,

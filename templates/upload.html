@@ -39,7 +39,7 @@ html, body {
     font-size: 2rem;
 }
 
-#cameraInput, #fileInput {
+#fileInput {
     display: none;
 }
 
@@ -149,11 +149,16 @@ html, body {
         <div id="uploadOverlay"><div class="spinner"></div></div>
 
         <form id="uploadForm" method="POST" enctype="multipart/form-data">
-            <label class="custom-file-btn" onclick="openCamera()">Take Photo</label>
-            <label class="custom-file-btn" onclick="openFilePicker()">Choose from Files</label>
-
-            <input id="cameraInput" type="file" name="file" accept="image/*" capture="environment" required>
-            <input id="fileInput" type="file" name="file" accept="image/*,video/*" required>
+            <!-- Single file input: camera or file picker -->
+            <label class="custom-file-btn" onclick="document.getElementById('fileInput').click()">
+                Take Photo / Choose File
+            </label>
+            <input 
+                id="fileInput" 
+                type="file" 
+                name="file" 
+                accept="image/*,video/*" 
+                
 
             <p id="fileName" style="color:#fff; font-weight:600;"></p>
 
@@ -169,6 +174,7 @@ html, body {
 <div class="toast" id="toast">Upload successful!</div>
 
 <script>
+// Toast message
 function showToast(msg) {
     const toast = document.getElementById('toast');
     toast.textContent = msg;
@@ -176,25 +182,18 @@ function showToast(msg) {
     setTimeout(() => toast.style.opacity = 0, 3000);
 }
 
+// Show overlay spinner on submit
 document.getElementById('uploadForm').addEventListener('submit', function() {
     document.getElementById('uploadOverlay').style.opacity = 1;
 });
 
-function openCamera() {
-    document.getElementById('cameraInput').click();
-}
-function openFilePicker() {
-    document.getElementById('fileInput').click();
-}
-
-document.getElementById('cameraInput').addEventListener('change', updateFileName);
-document.getElementById('fileInput').addEventListener('change', updateFileName);
-
-function updateFileName(e) {
+// Update file name display
+document.getElementById('fileInput').addEventListener('change', function(e) {
     const fileName = e.target.files[0]?.name || "No file selected";
     document.getElementById('fileName').textContent = fileName;
-}
+});
 
+// Background canvas animation
 const canvas = document.getElementById('bgCanvas');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
@@ -235,6 +234,7 @@ function animate() {
 }
 animate();
 
+// Show Flask flash messages
 {% with messages = get_flashed_messages() %}
 {% if messages %}
     showToast("{{ messages[0] }}");
