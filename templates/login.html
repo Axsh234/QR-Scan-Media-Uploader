@@ -11,9 +11,23 @@ html, body {
     background: url('https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTExL3Jhd3BpeGVsX29mZmljZV8zMF9hYnN0cmFjdF9ncmFkaWVudF93aGl0ZV9iYWNrZ3JvdW5kX3ZlY3Rvcl9wcl9kZGY3ZTJiNC0wMjU3LTRjMTUtOWFjNS0xMmQwZTA0N2E4MWYuanBn.jpg') center/cover no-repeat fixed;
 }
 
+/* floating circles applied to whole page */
+.circle {
+    position: fixed;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    pointer-events: none; /* so clicks go through */
+    animation: float linear infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-120vh); }
+}
+
 .login-wrapper {
     position: relative;
-    z-index: 2;
+    z-index: 2; /* above the floating circles */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -80,19 +94,7 @@ html, body {
     transition: opacity 0.5s ease;
     z-index: 999;
 }
-
-/* Full page canvas for animation */
-#bgCanvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-}
 </style>
-
-<canvas id="bgCanvas"></canvas>
 
 <div class="login-wrapper">
     <div class="login-container">
@@ -108,7 +110,6 @@ html, body {
 <div class="toast" id="toast">Invalid credentials!</div>
 
 <script>
-// Toast example (call showToast('Message') when needed)
 function showToast(msg) {
     const toast = document.getElementById('toast');
     toast.textContent = msg;
@@ -116,52 +117,21 @@ function showToast(msg) {
     setTimeout(() => toast.style.opacity = 0, 3000);
 }
 
-// Floating circles animation
-const canvas = document.getElementById('bgCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-});
-
-const circles = [];
+// Generate floating circles directly on body
 const circleCount = 50;
 
 for (let i = 0; i < circleCount; i++) {
-    circles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: 5 + Math.random() * 15,
-        dx: -0.5 + Math.random(),
-        dy: -0.5 + Math.random(),
-        alpha: 0.2 + Math.random() * 0.5
-    });
+    const circle = document.createElement('div');
+    circle.classList.add('circle');
+    const size = 5 + Math.random() * 20;
+    circle.style.width = `${size}px`;
+    circle.style.height = `${size}px`;
+    circle.style.left = `${Math.random() * 100}%`;
+    circle.style.bottom = `-${size}px`;
+    circle.style.animationDuration = `${5 + Math.random() * 10}s`;
+    circle.style.animationDelay = `${Math.random() * 5}s`;
+    circle.style.background = `rgba(255,255,255,${0.2 + Math.random() * 0.5})`;
+    document.body.appendChild(circle); // attach to body
 }
-
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    circles.forEach(c => {
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${c.alpha})`;
-        ctx.fill();
-
-        c.x += c.dx;
-        c.y += c.dy;
-
-        // Wrap around edges
-        if (c.x - c.radius > canvas.width) c.x = -c.radius;
-        if (c.x + c.radius < 0) c.x = canvas.width + c.radius;
-        if (c.y - c.radius > canvas.height) c.y = -c.radius;
-        if (c.y + c.radius < 0) c.y = canvas.height + c.radius;
-    });
-
-    requestAnimationFrame(animate);
-}
-animate();
 </script>
 {% endblock %}

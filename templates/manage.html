@@ -7,6 +7,7 @@ body {
     margin: 0;
     padding: 20px;
     color: #111;
+    position: relative;
 }
 
 /* Page heading */
@@ -15,6 +16,8 @@ h2 {
     margin-bottom: 20px;
     color: #111;
     text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+    position: relative;
+    z-index: 2;
 }
 
 /* Action buttons */
@@ -42,6 +45,8 @@ h2 {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
     justify-items: center;
+    position: relative;
+    z-index: 2;
 }
 
 /* Media card */
@@ -84,6 +89,20 @@ h2 {
     background: rgba(255,255,255,0.5);
     border-radius: 50%;
     padding: 4px;
+}
+
+/* Floating shapes */
+.shape {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1; /* behind content */
+    animation: float linear infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-120vh); }
 }
 
 /* Responsive */
@@ -156,5 +175,21 @@ document.getElementById('delete-selected').addEventListener('click', () => {
         body: JSON.stringify({media_ids: ids})
     }).then(() => location.reload());
 });
+
+// Floating shapes for full-page background
+const shapeCount = 50;
+for (let i = 0; i < shapeCount; i++) {
+    const shape = document.createElement('div');
+    shape.classList.add('shape');
+    const size = 5 + Math.random() * 20;
+    shape.style.width = `${size}px`;
+    shape.style.height = `${size}px`;
+    shape.style.left = `${Math.random() * 100}%`;
+    shape.style.bottom = `-${size}px`;
+    shape.style.background = `rgba(${Math.floor(200 + Math.random()*55)},${Math.floor(200 + Math.random()*55)},255,${0.2 + Math.random()*0.5})`;
+    shape.style.animationDuration = `${5 + Math.random()*10}s`;
+    shape.style.animationDelay = `${Math.random()*5}s`;
+    document.body.appendChild(shape);
+}
 </script>
 {% endblock %}

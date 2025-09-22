@@ -44,30 +44,6 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # ----------------- Auth Routes -----------------
-@app.route('/setup', methods=['GET', 'POST'])
-def setup():
-    """Always allow creating/resetting the admin user."""
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if not username or not password:
-            flash("Username and password cannot be empty.")
-            return render_template('setup.html')
-
-        existing = User.query.filter_by(username=username).first()
-        if existing:
-            db.session.delete(existing)
-            db.session.commit()
-
-        hashed = generate_password_hash(password)
-        admin = User(username=username, password=hashed)
-        db.session.add(admin)
-        db.session.commit()
-
-        flash(f"Admin '{username}' created! You can now log in.")
-        return redirect(url_for('login'))
-
-    return render_template('setup.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

@@ -69,19 +69,20 @@ h2 {
     text-shadow: 0 0 2px rgba(255,255,255,0.5);
 }
 
-/* Background canvas */
-#bgCanvas {
+/* Floating shapes */
+.shape {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+    border-radius: 50%;
     pointer-events: none;
+    z-index: 1; /* behind content */
+    animation: float linear infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-120vh); }
 }
 </style>
-
-<canvas id="bgCanvas"></canvas>
 
 <h2>Gallery</h2>
 
@@ -105,48 +106,21 @@ h2 {
 </div>
 
 <script>
-// Canvas background animation
-const canvas = document.getElementById('bgCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-});
-
-// Floating shapes
-const shapes = [];
+// Generate floating shapes directly on body
 const shapeCount = 60;
-for (let i = 0; i < shapeCount; i++) {
-    shapes.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: 5 + Math.random() * 20,
-        dx: -0.3 + Math.random() * 0.6,
-        dy: -0.3 + Math.random() * 0.6,
-        alpha: 0.2 + Math.random() * 0.5,
-        color: `rgba(${Math.floor(200 + Math.random()*55)},${Math.floor(200 + Math.random()*55)},255,`
-    });
-}
 
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    shapes.forEach(s => {
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
-        ctx.fillStyle = s.color + s.alpha + ')';
-        ctx.fill();
-        s.x += s.dx;
-        s.y += s.dy;
-        if (s.x - s.radius > canvas.width) s.x = -s.radius;
-        if (s.x + s.radius < 0) s.x = canvas.width + s.radius;
-        if (s.y - s.radius > canvas.height) s.y = -s.radius;
-        if (s.y + s.radius < 0) s.y = canvas.height + s.radius;
-    });
-    requestAnimationFrame(animate);
+for (let i = 0; i < shapeCount; i++) {
+    const shape = document.createElement('div');
+    shape.classList.add('shape');
+    const size = 5 + Math.random() * 20;
+    shape.style.width = `${size}px`;
+    shape.style.height = `${size}px`;
+    shape.style.left = `${Math.random() * 100}%`;
+    shape.style.bottom = `-${size}px`;
+    shape.style.background = `rgba(${Math.floor(200 + Math.random()*55)},${Math.floor(200 + Math.random()*55)},255,${0.2 + Math.random() * 0.5})`;
+    shape.style.animationDuration = `${5 + Math.random() * 10}s`;
+    shape.style.animationDelay = `${Math.random() * 5}s`;
+    document.body.appendChild(shape);
 }
-animate();
 </script>
 {% endblock %}

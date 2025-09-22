@@ -328,7 +328,7 @@ body {
                 <a href="{{ url_for('logout') }}">Logout</a>
             {% else %}
                 <a href="{{ url_for('login') }}">Login</a>
-                <a href="{{ url_for('register') }}">Register</a>
+                
             {% endif %}
             <a href="{{ url_for('upload') }}">Upload</a>
         </div>
@@ -361,7 +361,7 @@ body {
             <a href="{{ url_for('logout') }}" onclick="closeMenu()">Logout</a>
         {% else %}
             <a href="{{ url_for('login') }}" onclick="closeMenu()">Login</a>
-            <a href="{{ url_for('register') }}" onclick="closeMenu()">Register</a>
+            
         {% endif %}
         <a href="{{ url_for('upload') }}" onclick="closeMenu()">Upload</a>
     </nav>
