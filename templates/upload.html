@@ -148,19 +148,20 @@ html, body {
         <h2>Upload Media</h2>
         <div id="uploadOverlay"><div class="spinner"></div></div>
 
-        <form id="uploadForm" method="POST" enctype="multipart/form-data">
-            <!-- Single file input: camera or file picker -->
+                <form id="uploadForm" method="POST" enctype="multipart/form-data">
+            <!-- Multiple file input -->
             <label class="custom-file-btn" onclick="document.getElementById('fileInput').click()">
-                Take Photo / Choose File
+                Choose Files
             </label>
             <input 
                 id="fileInput" 
                 type="file" 
-                name="file" 
+                name="files" 
                 accept="image/*,video/*" 
-                
+                multiple   <!-- allow selecting multiple -->
+            >
 
-            <p id="fileName" style="color:#fff; font-weight:600;"></p>
+            <ul id="fileList" style="color:#fff; font-weight:600; text-align:left; list-style:none; padding:0;"></ul>
 
             {% if not current_user.is_authenticated %}
             <input id="uploader_name" type="text" name="uploader_name" placeholder="Your Name (Anonymous if blank)">
@@ -168,6 +169,7 @@ html, body {
             <input id="description" type="text" name="description" placeholder="Description (optional)">
             <button type="submit" class="upload-btn">Upload</button>
         </form>
+
     </div>
 </div>
 

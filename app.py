@@ -123,38 +123,43 @@ def home():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        file = request.files.get('file')  # now there's only one input
+        files = request.files.getlist('files')  # get multiple files
+        if not files or all(f.filename == '' for f in files):
+            flash("No files selected.")
+            return redirect(url_for('upload'))
 
-        if file and file.filename:
-            uploader_name = current_user.username if current_user.is_authenticated else request.form.get('uploader_name', 'Anonymous')
+        uploader_name = current_user.username if current_user.is_authenticated else request.form.get('uploader_name', 'Anonymous')
+        description = request.form.get('description')
 
-            # Reset pointer for size calculation
-            file.seek(0)
-            size = len(file.read())
-            file.seek(0)
+        for file in files:
+            if file and file.filename:
+                # Reset pointer for size calculation
+                file.seek(0)
+                size = len(file.read())
+                file.seek(0)
 
-            try:
-                # Upload to Cloudinary
-                result = cloudinary.uploader.upload(file, resource_type="auto")
+                try:
+                    # Upload to Cloudinary
+                    result = cloudinary.uploader.upload(file, resource_type="auto")
 
-            except Exception as e:
-                flash(f"Upload failed: {str(e)}")
-                return redirect(url_for('upload'))
+                    media = Media(
+                        filename=file.filename,
+                        url=result['secure_url'],
+                        public_id=result['public_id'],
+                        uploaded_by=uploader_name,
+                        description=description,
+                        size=size,
+                        mimetype=file.mimetype
+                    )
+                    db.session.add(media)
 
-            media = Media(
-                filename=file.filename,
-                url=result['secure_url'],
-                public_id=result['public_id'],
-                uploaded_by=uploader_name,
-                description=request.form.get('description'),
-                size=size,
-                mimetype=file.mimetype
-            )
+                except Exception as e:
+                    flash(f"Upload failed for {file.filename}: {str(e)}")
+                    continue
 
-            db.session.add(media)
-            db.session.commit()
-            flash("Upload successful!")
-            return redirect(url_for('gallery'))
+        db.session.commit()
+        flash("Upload successful!")
+        return redirect(url_for('gallery'))
 
     return render_template('upload.html')
 
